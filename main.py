@@ -78,18 +78,27 @@ def process(product_url: str, output_dir: Path) -> Path:
 
 
 def main() -> None:
-    urls = sys.argv[1:]
-    if not urls:
-        print("usage: python main.py <ikea-url> [<ikea-url> ...]")
-        print("example: python main.py https://www.ikea.com/us/en/p/skadis-pegboard-wood-10347171/")
-        sys.exit(1)
+    import argparse
 
-    output_dir = Path("models")
+    parser = argparse.ArgumentParser(
+        prog="almhult",
+        description="Download IKEA 3D models and convert to OBJ for SweetHome3D.",
+    )
+    parser.add_argument("urls", nargs="+", metavar="URL", help="IKEA product page URL(s)")
+    parser.add_argument(
+        "-o", "--output-dir",
+        type=Path,
+        default=Path("models"),
+        metavar="DIR",
+        help="directory to save OBJ files (default: ./models)",
+    )
+    args = parser.parse_args()
+
     errors = []
-    for url in urls:
+    for url in args.urls:
         print(f"\n{url}")
         try:
-            process(url, output_dir)
+            process(url, args.output_dir)
         except Exception as e:
             print(f"  error: {e}", file=sys.stderr)
             errors.append(url)
