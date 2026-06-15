@@ -9,10 +9,10 @@ import httpx
 import trimesh
 
 
-def extract_product_id(url: str) -> str:
-    match = re.search(r'/p/[^/]+-(\d+)/', url)
+def extract_slug(url: str) -> str:
+    match = re.search(r'/p/([^/]+)/', url)
     if not match:
-        raise ValueError(f"Could not extract product ID from URL: {url}")
+        raise ValueError(f"Could not extract product slug from URL: {url}")
     return match.group(1)
 
 
@@ -39,7 +39,8 @@ def download_glb(url: str, dest: Path) -> None:
         dest.write_bytes(response.content)
 
 
-def glb_to_obj(glb_path: Path, obj_path: Path) -> None:
+def glb_to_obj(glb_path: Path, product_dir: Path) -> None:
+    """Convert GLB to OBJ + MTL + textures, all written into product_dir."""
     loaded = trimesh.load(str(glb_path), force="scene")
     if isinstance(loaded, trimesh.Scene):
         geometries = list(loaded.geometry.values())
@@ -48,14 +49,14 @@ def glb_to_obj(glb_path: Path, obj_path: Path) -> None:
         mesh = trimesh.util.concatenate(geometries)
     else:
         mesh = loaded
-    mesh.export(str(obj_path))
+    mesh.export(str(product_dir / "model.obj"))
 
 
 def process(product_url: str, output_dir: Path) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    product_id = extract_product_id(product_url)
-    print(f"  product id : {product_id}")
+    slug = extract_slug(product_url)
+    product_dir = output_dir / slug
+    product_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  slug       : {slug}")
 
     response = httpx.get(product_url, follow_redirects=True)
     response.raise_for_status()
@@ -63,18 +64,18 @@ def process(product_url: str, output_dir: Path) -> Path:
     glb_url = find_best_glb_url(response.text)
     print(f"  model url  : {glb_url}")
 
-    glb_path = output_dir / f"{product_id}.glb"
-    obj_path = output_dir / f"{product_id}.obj"
+    glb_path = product_dir / "model.glb"
 
     print(f"  downloading...")
     download_glb(glb_url, glb_path)
     print(f"  converting to OBJ...")
-    glb_to_obj(glb_path, obj_path)
-    glb_path.unlink()  # remove intermediate GLB
+    glb_to_obj(glb_path, product_dir)
+    glb_path.unlink()
 
-    size_kb = obj_path.stat().st_size // 1024
-    print(f"  saved       : {obj_path} ({size_kb} KB)")
-    return obj_path
+    for asset in sorted(product_dir.iterdir()):
+        size_kb = asset.stat().st_size // 1024
+        print(f"  saved       : {asset} ({size_kb} KB)")
+    return product_dir
 
 
 def main() -> None:
