@@ -72,7 +72,6 @@ def process(product_url: str, output_dir: Path) -> Path:
     download_glb(glb_url, glb_path)
     print(f"  converting to OBJ...")
     glb_to_obj(glb_path, product_dir)
-    glb_path.unlink()
 
     for asset in sorted(product_dir.iterdir()):
         size_kb = asset.stat().st_size // 1024

@@ -53,8 +53,10 @@ Each product is saved into its own slug folder containing the full OBJ asset set
 ```
 models/
 └── skadis-pegboard-wood-10347171/
+    ├── model.glb        ← original IKEA source file
     ├── model.obj
-    └── model.mtl
+    ├── model.mtl
+    └── <texture>.png
 ```
 
 ## Importing into SweetHome3D
