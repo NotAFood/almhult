@@ -49,6 +49,8 @@ def glb_to_obj(glb_path: Path, product_dir: Path) -> None:
         mesh = trimesh.util.concatenate(geometries)
     else:
         mesh = loaded
+    # GLB/GLTF units are meters; SweetHome3D reads OBJ as centimeters
+    mesh.apply_scale(100)
     mesh.export(str(product_dir / "model.obj"))
 
 
