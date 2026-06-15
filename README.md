@@ -65,6 +65,8 @@ models/
 4. Set the real-world dimensions (check the IKEA product page for measurements)
 5. Assign a category and name, then click **Finish**
 
+**A note on scale and positioning:** Models are exported in centimeters to match SweetHome3D's coordinate system, but depending on the product the scale or elevation may still need manual adjustment after import — particularly for wall-mounted items (pegboards, shelves, cabinets) which may appear at floor level. Use your best judgement and cross-reference the IKEA product dimensions when placing models.
+
 ## A note on responsible use
 
 This tool fetches product pages and 3D model assets from IKEA's public website. Please use it considerately:
