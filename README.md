@@ -33,6 +33,7 @@ uv run almhult <ikea-url> [<ikea-url> ...]
 |------|---------|-------------|
 | `-o`, `--output-dir DIR` | `./models` | Directory to save converted models |
 | `-f`, `--format {usdz,usd,obj}` | `usdz` | Output format; `usd` for a loose stage + `textures/`, `obj` for SweetHome3D |
+| `--floor` | off | For planner URLs, prefer the floor-centred model variant when IKEA provides one |
 
 **Examples:**
 
@@ -51,6 +52,9 @@ uv run almhult \
   https://www.ikea.com/us/en/p/skadis-pegboard-wood-10347171/ \
   https://www.ikea.com/us/en/p/kallax-shelf-unit-white-20275814/
 
+# Download a part from one of IKEA's storage planners (see "Planner URLs" below)
+uv run almhult "https://www.ikea.com/addon-app/storageone/kallax/web/latest/us/en/?productId=70286645#/planner"
+
 # Save to a custom directory
 uv run almhult -o ~/Desktop/ikea-models https://www.ikea.com/us/en/p/skadis-pegboard-wood-10347171/
 ```
@@ -65,6 +69,25 @@ models/
 ```
 
 With `-f usd`, `model.usdz` is replaced by a loose `model.usdc` + `textures/` directory. With `-f obj`, it's replaced by `model.obj`, `model.mtl`, and the texture PNGs alongside it.
+
+## Planner URLs
+
+IKEA's storage planners (`/addon-app/storageone/<range>/...`) are also accepted. With a `productId=` parameter — the 8-digit article number — you get that one part; without it you get every part in that planner's range that has a model. Quote the URL so your shell doesn't interpret the `?` and `#`.
+
+```sh
+# Every KALLAX planner part, floor-centred where available
+uv run almhult --floor "https://www.ikea.com/addon-app/storageone/kallax/web/latest/us/en/#/planner"
+```
+
+Supported ranges: AURDAL, BESTÅ, BILLY, BOAXEL, BROR, EKET, ELVARLI, GULDDRAGARE, IVAR, JONAXEL, KALLAX, KNOXHULT, LÅDMAKARE, LÄSTARE, METOD, PAX, PLATSA, SMÅSTAD and TROFAST.
+
+Things to know:
+
+- Planner models are individual parts (a frame, a drawer insert, a door), not whole designs. Combination article numbers have no model of their own; almhult lists the parts they are made of so you can fetch those instead.
+- Not every article in a planner has a model — small accessories often don't.
+- Planner models are lower-poly than product-page models, and their origin varies: some sit on the floor, others are centred on their bounding box.
+- When IKEA offers more than one model for a part, almhult takes the planner's own and prints the others as `alt models`. Pass `--floor` to take the floor-centred variant instead (origin at the centre of the base, usually a single merged mesh); parts without one fall back to the default and are listed.
+- `model.glb` is saved with Draco compression removed, so it opens in tools without a Draco decoder.
 
 ## Importing USD
 
